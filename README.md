@@ -12,5 +12,3 @@
 - Testen
 
 ## TODOs
-- Build pipeline in Github
-  - mods (Illage and Spillage, ...) jar in libs kopieren usw

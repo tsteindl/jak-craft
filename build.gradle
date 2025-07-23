@@ -155,11 +155,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-//    implementation fg.deobf("curse.maven:appleskin-248787:4770828")
-//    implementation fg.deobf("curse.maven:illage-and-spillage-finally-ported-1079714:6156035")
-//    implementation fg.deobf("curse.maven:illage-and-spillage-finally-ported-1079714:5606471")
-//    modCompileOnly("curse.maven:illage-and-spillage-finally-ported-1079714:6156035")
-
+    implementation fg.deobf("curse.maven:illage-and-spillage-finally-ported-1079714:6156035")
     implementation fg.deobf("curse.maven:astemirlib-933306:5066295")
     implementation fg.deobf("curse.maven:the-dawn-era-965477:5054070")
 }
