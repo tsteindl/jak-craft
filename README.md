@@ -3,7 +3,7 @@
 ## Installation
 - Java 17 haben
 - In IDE öffnen (Bsp anhand von IntelliJ)
-- Gradle Build ausführen
+- Gradle Build ausführen (Tab ganz rechts auf der Seite)
 - Gradle Task "forgegradle runs/genIntellijRuns" ausführen
 - Gradle Task "runClient" ausführen (ggfs. IDE neustarten wenn nicht vorhanden), es sollte sich ein MC-Fenster öffnen
 - Programmieren, usw...
@@ -13,3 +13,4 @@
 
 ## TODOs
 - Build pipeline in Github
+  - mods (Illage and Spillage, ...) jar in libs kopieren usw
