@@ -17,7 +17,8 @@ public class ModCreativeTab {
           .icon(() -> new ItemStack(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get()))
           .title(Component.translatable("creativetab.jakcraft_tab"))
           .displayItems((parameters, output) -> {
-            output.accept(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get()); // Add the egg here
+            output.accept(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get());
+            output.accept(ModItems.MUELLAGERKING_SPAWN_EGG.get());
           })
           .build());
 
