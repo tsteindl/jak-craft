@@ -1,8 +1,24 @@
 package com.tsteindl.jakcraft;
 
 import com.yellowbrossproductions.illageandspillage.entities.MagispellerEntity;
+import com.yellowbrossproductions.illageandspillage.packet.PacketHandler;
+import com.yellowbrossproductions.illageandspillage.packet.ParticlePacket;
+import com.yellowbrossproductions.illageandspillage.util.ItemRegisterer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
+
+import static com.tsteindl.jakcraft.ModItems.MUELLAGERKING_SPAWN_EGG;
 
 public class MuellagerKingEntity extends MagispellerEntity {
 
@@ -14,4 +30,13 @@ public class MuellagerKingEntity extends MagispellerEntity {
     protected void registerGoals() {
         super.registerGoals();
     }
+
+    @Override
+    protected void dropAllDeathLoot(DamageSource source) {
+        if (this.shouldDropLoot() && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT) && this.lastHurtByPlayerTime > 0) {
+            this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), new ItemStack((ItemLike) MUELLAGERKING_SPAWN_EGG.get())));
+        }
+        super.dropAllDeathLoot(source);
+    }
+
 }

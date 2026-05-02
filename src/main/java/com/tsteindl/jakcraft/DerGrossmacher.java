@@ -4,8 +4,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 
-public class CarlosDieKlinge extends SwordItem {
-    public CarlosDieKlinge() {
-        super(Tiers.DIAMOND, 0, 0F, new Item.Properties());
+public class DerGrossmacher extends SwordItem {
+    public DerGrossmacher() {
+        super(Tiers.DIAMOND, 1000000, 10F, new Item.Properties());
     }
 }

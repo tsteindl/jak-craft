@@ -23,6 +23,12 @@ public class ModItems {
           CarlosDieKlinge::new
   );
 
+  public static final RegistryObject<Item> DER_GROSSMACHER = ITEMS.register(
+          "der_grossmacher",
+          DerGrossmacher::new
+  );
+
+
   // 2. Register the Spawn Egg (Primary color: Green, Secondary color: Red -
   // change as desired)
   public static final RegistryObject<Item> JAK_VELOCIRAPTOR_SPAWN_EGG = ITEMS.register("jak_velociraptor_spawn_egg",
