@@ -15,6 +15,7 @@ public class Jakcraft {
     ModEntities.register(modBus);
     ModItems.register(modBus);
     ModCreativeTab.register(modBus);
+    ModMobProperties.register(modBus);
     MinecraftForge.EVENT_BUS.register(this);
   }
 }

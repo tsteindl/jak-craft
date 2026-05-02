@@ -59,10 +59,14 @@ The mod uses Forge's `DeferredRegister` pattern for all game objects:
 - `ModItems`: Registry for custom items.
 - `ModEntities`: Registry for custom entities.
 - `ModCreativeTab`: Registry for the custom creative mode tab.
+- `ModMobProperties`: Registry for entity properties required by "The Dawn Era" base classes.
 
 ### Custom Entities
 - **Müllager King** (`muellagerking`): Based on `MagispellerEntity`.
-- **Jak Velociraptor** (`jakvelociraptor`): Custom entity with a dedicated model and renderer.
+- **Jak Velociraptor** (`jakvelociraptor`): Custom entity inheriting from `EntityCeratosaurus`. Requires registration in `ModMobProperties` to function.
+
+### Custom Items
+- **Carlos' Blade** (`carlos_die_klinge`): A custom sword item.
 
 ### Client-Side Setup
 Client-specific logic (like entity rendering) is handled in `com.tsteindl.jakcraft.client.ClientSetup`. Ensure any new entities have their renderers registered here.
