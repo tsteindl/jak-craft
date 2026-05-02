@@ -19,6 +19,7 @@ public class ModCreativeTab {
           .displayItems((parameters, output) -> {
             output.accept(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get());
             output.accept(ModItems.MUELLAGERKING_SPAWN_EGG.get());
+            output.accept(ModItems.CARLOS_DIE_KLINGE.get());
           })
           .build());
 
