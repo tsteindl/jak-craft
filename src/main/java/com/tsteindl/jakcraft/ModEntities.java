@@ -25,9 +25,9 @@ public class ModEntities {
   public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister
       .create(ForgeRegistries.ENTITY_TYPES, Jakcraft.MODID);
 
-  public static final RegistryObject<EntityType<MagispellerEntity>> MUELLAGERKING = ENTITY_TYPES
+  public static final RegistryObject<EntityType<MuellagerKingEntity>> MUELLAGERKING = ENTITY_TYPES
       .register("muellagerking", () -> EntityType.Builder
-          .of(MagispellerEntity::new, MobCategory.MONSTER)
+          .of(MuellagerKingEntity::new, MobCategory.MONSTER)
           .sized(0.6F, 2.3F)
           .build(fromNamespaceAndPath(Jakcraft.MODID, "muellagerking").toString()));
 
