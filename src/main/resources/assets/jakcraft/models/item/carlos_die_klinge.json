@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "jakcraft:items/carlos_die_klinge"
+  }
+}
