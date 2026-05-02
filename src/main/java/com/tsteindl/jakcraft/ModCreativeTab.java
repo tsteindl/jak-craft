@@ -14,10 +14,10 @@ public class ModCreativeTab {
 
   public static final RegistryObject<CreativeModeTab> JAKCRAFT_TAB = CREATIVE_MODE_TABS.register("jakcraft_tab",
       () -> CreativeModeTab.builder()
-          .icon(() -> new ItemStack(ModEntities.JAK_VELOCIRAPTOR_SPAWN_EGG.get()))
+          .icon(() -> new ItemStack(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get()))
           .title(Component.translatable("creativetab.jakcraft_tab"))
           .displayItems((parameters, output) -> {
-            output.accept(ModEntities.JAK_VELOCIRAPTOR_SPAWN_EGG.get()); // Add the egg here
+            output.accept(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get()); // Add the egg here
           })
           .build());
 
