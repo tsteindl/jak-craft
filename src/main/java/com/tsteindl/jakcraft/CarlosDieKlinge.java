@@ -7,7 +7,7 @@ import net.minecraft.world.item.Tiers;
 
 public class CarlosDieKlinge extends SwordItem {
     public CarlosDieKlinge() {
-        super(Tiers.DIAMOND, 0, 0F, new Item.Properties().tab(CreativeModeTab.TAB_COMBAT));
+        super(Tiers.DIAMOND, 0, 0F, new Item.Properties());
     }
 
 }

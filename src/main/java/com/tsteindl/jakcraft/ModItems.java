@@ -18,6 +18,11 @@ public class ModItems {
           0x9804699,
           new Item.Properties()));
 
+  public static final RegistryObject<Item> CARLOS_DIE_KLINGE = ITEMS.register(
+          "carlos_die_klinge",
+          CarlosDieKlinge::new
+  );
+
   // 2. Register the Spawn Egg (Primary color: Green, Secondary color: Red -
   // change as desired)
   public static final RegistryObject<Item> JAK_VELOCIRAPTOR_SPAWN_EGG = ITEMS.register("jak_velociraptor_spawn_egg",
