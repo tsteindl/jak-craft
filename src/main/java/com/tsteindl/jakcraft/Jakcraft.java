@@ -21,5 +21,7 @@ public class Jakcraft {
     MinecraftForge.EVENT_BUS.register(this);
 
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+    System.out.println("JAKCRAFT_AUTODEPLOY_TEST_MARKER build=1");
   }
 }
