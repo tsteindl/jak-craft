@@ -42,6 +42,11 @@ public class CarlosDieKlinge extends SwordItem {
         if (!level.isClientSide) {
             entity.heal(HEAL_AMOUNT);
         }
+        // Also fill hunger and saturation.
+        if (entity instanceof Player player) {
+            player.getFoodData().setFoodLevel(20);
+            player.getFoodData().setSaturation(20.0F);
+        }
         entity.gameEvent(GameEvent.DRINK);
         // Never consumed - return the stack unchanged so it does not shrink.
         return stack;

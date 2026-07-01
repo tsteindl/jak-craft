@@ -1,5 +1,7 @@
 package com.tsteindl.jakcraft;
 
+import com.yellowbrossproductions.illageandspillage.entities.FakeMagispellerEntity;
+import com.yellowbrossproductions.illageandspillage.entities.IllashooterEntity;
 import com.yellowbrossproductions.illageandspillage.entities.MagispellerEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Vex;
@@ -27,6 +29,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -37,13 +40,14 @@ import java.util.function.Supplier;
 public class MuellagerKingEntity extends MagispellerEntity {
 
     private static final int ATTACK_LINE_GAP_TICKS = 200; // throttle generic attack chatter (~10s)
+    private static final int PASSENBRUNNER_LINE_GAP_TICKS = 100;
     private static final int LIFESTEAL_ATTACK_TYPE = 2;
-    private static final int MAX_SLOWNESS_TICKS = 20; // ~1 second
 
     private boolean announcedFightStart = false;
     private int lastAttackType = 0;
     private int fourierCooldown = 0;
     private long lastAttackLineTime = -10000L;
+    private long lastPassenbrunnerLineTime = -10000L;
     // Health can only ratchet down: the king never heals (life-steal / self-heal disabled).
     private float healthCap = -1.0F;
 
@@ -59,15 +63,20 @@ public class MuellagerKingEntity extends MagispellerEntity {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        // Remove parent attacks we disable/replace: life-steal, self-heal, and the two unnamed
-        // helper summons (vexes/fakers) which we replace with named Passenbrunner/Lechner summons.
-        this.goalSelector.getAvailableGoals().removeIf(wrapped -> {
+        // Remove parent attacks we disable/replace. NOTE: getAvailableGoals() returns a COPY here,
+        // so removeIf on it does nothing - we must call goalSelector.removeGoal() on the real set.
+        // We keep DispenserGoal (its "Illashooter" minions become our Passenbrunner, see below).
+        List<Goal> toRemove = new ArrayList<>();
+        for (WrappedGoal wrapped : this.goalSelector.getAvailableGoals()) {
             String name = wrapped.getGoal().getClass().getSimpleName().toLowerCase();
-            return name.contains("lifesteal") || name.contains("heal")
-                || name.contains("summonvexes") || name.contains("fakers");
-        });
+            if (name.contains("lifesteal") || name.contains("heal")
+                || name.contains("summonvexes") || name.contains("fakers")) {
+                toRemove.add(wrapped.getGoal());
+            }
+        }
+        toRemove.forEach(this.goalSelector::removeGoal);
         this.goalSelector.addGoal(1, new FourierWaveGoal(this));
-        this.goalSelector.addGoal(2, new SummonHelpersGoal(this, "Passenbrunner", Config.PASSENBRUNNER_LINES::get, SummonHelpersGoal.PILLAGER));
+        // Lechner = flying vexes (Passenbrunner are the chest/Illashooter minions, named in customServerAiStep).
         this.goalSelector.addGoal(2, new SummonHelpersGoal(this, "Lechner", Config.LECHNER_LINES::get, SummonHelpersGoal.VEX));
     }
 
@@ -99,10 +108,10 @@ public class MuellagerKingEntity extends MagispellerEntity {
         if (this.level().isClientSide) {
             return;
         }
-        // Belt-and-suspenders: cancel life-steal again, and never let health increase.
         if (this.getAttackType() == LIFESTEAL_ATTACK_TYPE) {
             this.setAttackType(0);
         }
+        // Never let health increase (bullet-proof against life-steal / self-heal).
         float health = this.getHealth();
         if (this.healthCap < 0.0F) {
             this.healthCap = health;
@@ -125,14 +134,33 @@ public class MuellagerKingEntity extends MagispellerEntity {
             this.fourierCooldown--;
         }
 
-        // Cap any slowness on nearby players to ~1 second so it isn't frustrating.
         if (this.level() instanceof ServerLevel serverLevel) {
+            long gameTime = serverLevel.getGameTime();
+
+            // The king should never slow you down: strip slowness from nearby players.
             for (ServerPlayer player : serverLevel.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(24.0))) {
-                MobEffectInstance slow = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-                if (slow != null && slow.getDuration() > MAX_SLOWNESS_TICKS + 5) {
-                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, MAX_SLOWNESS_TICKS,
-                        slow.getAmplifier(), slow.isAmbient(), slow.isVisible()));
+                if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+                    player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                 }
+            }
+
+            // Remove any fake-Magispeller clones (this is what caused the "two kings").
+            for (FakeMagispellerEntity fake : serverLevel.getEntitiesOfClass(FakeMagispellerEntity.class, this.getBoundingBox().inflate(64.0))) {
+                fake.discard();
+            }
+
+            // Name the chest minions "Passenbrunner" and announce them with a voice line.
+            boolean namedNew = false;
+            for (IllashooterEntity shooter : serverLevel.getEntitiesOfClass(IllashooterEntity.class, this.getBoundingBox().inflate(32.0))) {
+                if (shooter.getCustomName() == null) {
+                    shooter.setCustomName(Component.literal("Passenbrunner"));
+                    shooter.setCustomNameVisible(true);
+                    namedNew = true;
+                }
+            }
+            if (namedNew && gameTime - this.lastPassenbrunnerLineTime >= PASSENBRUNNER_LINE_GAP_TICKS) {
+                this.say(Config.PASSENBRUNNER_LINES.get());
+                this.lastPassenbrunnerLineTime = gameTime;
             }
         }
 
@@ -275,26 +303,13 @@ public class MuellagerKingEntity extends MagispellerEntity {
         }
     }
 
-    // Summons a wave of named "helpers" that fight for the king, announced with a voice line.
-    // Passenbrunner = crossbow Pillagers (ranged), Lechner = flying Vexes. Instant cast.
+    // Summons a wave of named flying "Lechner" vexes that fight for the king, with a voice line.
     static class SummonHelpersGoal extends Goal {
 
         @FunctionalInterface
         interface Spawner {
             Mob spawn(ServerLevel level, MuellagerKingEntity king, double x, double z);
         }
-
-        static final Spawner PILLAGER = (level, king, x, z) -> {
-            Pillager pillager = EntityType.PILLAGER.create(level);
-            if (pillager == null) {
-                return null;
-            }
-            pillager.moveTo(x, king.getY(), z, king.getRandom().nextFloat() * 360.0F, 0.0F);
-            pillager.finalizeSpawn(level, level.getCurrentDifficultyAt(pillager.blockPosition()), MobSpawnType.MOB_SUMMONED, null, null);
-            pillager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
-            pillager.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
-            return pillager;
-        };
 
         static final Spawner VEX = (level, king, x, z) -> {
             Vex vex = EntityType.VEX.create(level);
@@ -308,6 +323,19 @@ public class MuellagerKingEntity extends MagispellerEntity {
             vex.setBoundOrigin(king.blockPosition());
             vex.setLimitedLife(20 * (30 + king.getRandom().nextInt(30)));
             return vex;
+        };
+
+        // Kept for easy reuse if a ground/ranged summon is wanted again.
+        static final Spawner PILLAGER = (level, king, x, z) -> {
+            Pillager pillager = EntityType.PILLAGER.create(level);
+            if (pillager == null) {
+                return null;
+            }
+            pillager.moveTo(x, king.getY(), z, king.getRandom().nextFloat() * 360.0F, 0.0F);
+            pillager.finalizeSpawn(level, level.getCurrentDifficultyAt(pillager.blockPosition()), MobSpawnType.MOB_SUMMONED, null, null);
+            pillager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+            pillager.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+            return pillager;
         };
 
         private static final int COOLDOWN_TICKS = 320;
