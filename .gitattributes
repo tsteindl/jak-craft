@@ -3,3 +3,11 @@
 # are changed when only line endings change.
 src/generated/**/.cache/cache text eol=lf
 src/generated/**/*.json text eol=lf
+
+# Deploy scripts run on Linux - must stay LF even when committed from Windows
+gradlew text eol=lf
+*.sh text eol=lf
+deploy/update-jakcraft.sh text eol=lf
+deploy/jakcraft-update.service text eol=lf
+deploy/jakcraft-update.timer text eol=lf
+deploy/minecraft.service.example text eol=lf

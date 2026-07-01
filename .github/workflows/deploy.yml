@@ -1,0 +1,56 @@
+name: Build & Publish Server Jar
+
+# On every push to main: build the mod and publish the jar as a rolling GitHub
+# Release asset ("server-latest"). The Minecraft server polls that public asset and
+# redeploys itself (see deploy/update-jakcraft.sh + DEPLOYMENT.md).
+#
+# Why a release-pull instead of SSH-from-Actions: the server lives on a private LAN
+# IP (10.0.0.13) that GitHub's hosted runners cannot reach. Having the server pull a
+# public release asset needs no inbound access and no secrets stored in this public repo.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # required to create/update the release
+
+concurrency:
+  group: deploy-server-jar
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Make Gradle executable
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Stage jar under a stable name
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          jar="$(ls build/libs/jakcraft-*.jar | grep -v sources | head -1)"
+          echo "Publishing: $jar"
+          cp "$jar" dist/jakcraft-server.jar
+
+      - name: Publish rolling "server-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: server-latest
+          name: Latest server build
+          body: "Automatically built from ${{ github.sha }}. The Minecraft server pulls jakcraft-server.jar from here."
+          prerelease: true
+          files: dist/jakcraft-server.jar

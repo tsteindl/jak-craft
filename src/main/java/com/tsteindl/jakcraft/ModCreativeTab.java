@@ -25,6 +25,7 @@ public class ModCreativeTab {
             output.accept(ModItems.VOLLEYBALL.get());
             output.accept(ModItems.VOLLEYBALL_SHOES.get());
             output.accept(ModItems.MOJITO.get());
+            output.accept(ModItems.PHD.get());
           })
           .build());
 

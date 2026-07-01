@@ -1,0 +1,26 @@
+# EXAMPLE Minecraft server unit so the deploy can restart it gracefully.
+# Only needed if you don't already run the server under systemd. Adapt paths/memory,
+# install to /etc/systemd/system/minecraft.service, then: sudo systemctl enable --now minecraft
+#
+# The key detail is a graceful ExecStop that sends "stop" to the server console via a
+# named pipe, so players get a clean shutdown instead of a hard kill. This setup pipes
+# stdin from a FIFO at /home/minecraft/server/console.in.
+[Unit]
+Description=Minecraft Forge Server (jakcraft)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=minecraft
+WorkingDirectory=/home/minecraft/server
+# Recreate the console FIFO on each start.
+ExecStartPre=/bin/sh -c 'rm -f console.in && mkfifo console.in'
+# Keep the FIFO open for writing so the server's stdin never sees EOF, and feed it in.
+ExecStart=/bin/sh -c 'tail -f console.in | java -Xms2G -Xmx4G -jar server.jar nogui'
+# Graceful stop: tell the server to save and stop, then give it time.
+ExecStop=/bin/sh -c 'echo stop > console.in'
+TimeoutStopSec=90
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

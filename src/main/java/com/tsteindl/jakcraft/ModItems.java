@@ -1,6 +1,7 @@
 package com.tsteindl.jakcraft;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -48,6 +49,12 @@ public class ModItems {
   public static final RegistryObject<Item> MOJITO = ITEMS.register(
       "mojito",
       () -> new MojitoItem(new Item.Properties().stacksTo(16))
+  );
+
+  // Scroll-like trophy dropped by the Müllagerking - Jakob finally earns his doctorate.
+  public static final RegistryObject<Item> PHD = ITEMS.register(
+      "phd",
+      () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1))
   );
 
   // 2. Register the Spawn Egg (Primary color: Green, Secondary color: Red -

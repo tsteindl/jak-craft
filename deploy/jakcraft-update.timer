@@ -1,0 +1,13 @@
+# Polls for a new build every minute. Install to /etc/systemd/system/jakcraft-update.timer
+# then: sudo systemctl enable --now jakcraft-update.timer
+[Unit]
+Description=Poll for new jak-craft builds
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Unit=jakcraft-update.service
+
+[Install]
+WantedBy=timers.target

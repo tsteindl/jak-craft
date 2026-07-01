@@ -1,0 +1,14 @@
+# Runs one poll-and-maybe-deploy cycle. Triggered by jakcraft-update.timer.
+# Install to /etc/systemd/system/jakcraft-update.service
+[Unit]
+Description=Check for a new jak-craft build and redeploy it
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=minecraft
+# Adjust these to your server layout (or leave the script defaults):
+Environment=JAKCRAFT_MODS_DIR=/home/minecraft/server/mods
+Environment=JAKCRAFT_RESTART_CMD=systemctl restart minecraft
+ExecStart=/home/minecraft/deploy/update-jakcraft.sh
