@@ -1,6 +1,5 @@
 package com.tsteindl.jakcraft;
 
-import com.yellowbrossproductions.illageandspillage.entities.FakeMagispellerEntity;
 import com.yellowbrossproductions.illageandspillage.entities.IllashooterEntity;
 import com.yellowbrossproductions.illageandspillage.entities.MagispellerEntity;
 import net.minecraft.ChatFormatting;
@@ -65,12 +64,13 @@ public class MuellagerKingEntity extends MagispellerEntity {
         super.registerGoals();
         // Remove parent attacks we disable/replace. NOTE: getAvailableGoals() returns a COPY here,
         // so removeIf on it does nothing - we must call goalSelector.removeGoal() on the real set.
-        // We keep DispenserGoal (its "Illashooter" minions become our Passenbrunner, see below).
+        // We keep DispenserGoal (its "Illashooter" minions become our Passenbrunner) and FakersGoal
+        // (the clone / "two kings" - intentional).
         List<Goal> toRemove = new ArrayList<>();
         for (WrappedGoal wrapped : this.goalSelector.getAvailableGoals()) {
             String name = wrapped.getGoal().getClass().getSimpleName().toLowerCase();
             if (name.contains("lifesteal") || name.contains("heal")
-                || name.contains("summonvexes") || name.contains("fakers")) {
+                || name.contains("summonvexes")) {
                 toRemove.add(wrapped.getGoal());
             }
         }
@@ -142,11 +142,6 @@ public class MuellagerKingEntity extends MagispellerEntity {
                 if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
                     player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                 }
-            }
-
-            // Remove any fake-Magispeller clones (this is what caused the "two kings").
-            for (FakeMagispellerEntity fake : serverLevel.getEntitiesOfClass(FakeMagispellerEntity.class, this.getBoundingBox().inflate(64.0))) {
-                fake.discard();
             }
 
             // Name the chest minions "Passenbrunner" and announce them with a voice line.
