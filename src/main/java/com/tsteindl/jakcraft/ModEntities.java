@@ -37,6 +37,14 @@ public class ModEntities {
           .sized(0.6F, 2.3F)
           .build(fromNamespaceAndPath(Jakcraft.MODID, "jakvelociraptor").toString()));
 
+  public static final RegistryObject<EntityType<VolleyballEntity>> VOLLEYBALL = ENTITY_TYPES
+      .register("volleyball", () -> EntityType.Builder
+          .of(VolleyballEntity::new, MobCategory.MISC)
+          .sized(0.5F, 0.5F)
+          .clientTrackingRange(8)
+          .updateInterval(2)
+          .build(fromNamespaceAndPath(Jakcraft.MODID, "volleyball").toString()));
+
   @SubscribeEvent
   public static void onAttribute(EntityAttributeCreationEvent event) {
     event.put(MUELLAGERKING.get(), MagispellerEntity.createAttributes().build());

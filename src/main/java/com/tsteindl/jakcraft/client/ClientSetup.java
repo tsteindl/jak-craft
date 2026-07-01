@@ -4,6 +4,7 @@ import com.tsteindl.jakcraft.ModEntities;
 import com.yellowbrossproductions.illageandspillage.client.render.MagispellerRenderer;
 import com.tsteindl.jakcraft.JakVelociraptorModel;
 
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -26,5 +27,6 @@ public class ClientSetup {
   public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
     // Link your custom Entity Type to your custom Renderer
     event.registerEntityRenderer(ModEntities.JAK_VELOCIRAPTOR.get(), JakVelociraptorModel::createRenderer);
+    event.registerEntityRenderer(ModEntities.VOLLEYBALL.get(), ThrownItemRenderer::new);
   }
 }

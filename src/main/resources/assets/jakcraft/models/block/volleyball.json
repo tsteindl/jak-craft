@@ -1,0 +1,20 @@
+{
+  "textures": {
+    "ball": "jakcraft:block/volleyball",
+    "particle": "jakcraft:block/volleyball"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "uv": [5.333, 0, 10.667, 8], "texture": "#ball" },
+        "east": { "uv": [10.667, 0, 16, 8], "texture": "#ball" },
+        "south": { "uv": [5.333, 8, 10.667, 16], "texture": "#ball" },
+        "west": { "uv": [0, 0, 5.333, 8], "texture": "#ball" },
+        "up": { "uv": [0, 8, 5.333, 16], "texture": "#ball" },
+        "down": { "uv": [10.667, 8, 16, 16], "texture": "#ball" }
+      }
+    }
+  ]
+}

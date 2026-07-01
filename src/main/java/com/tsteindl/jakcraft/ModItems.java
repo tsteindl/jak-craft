@@ -28,6 +28,10 @@ public class ModItems {
           DerGrossmacher::new
   );
 
+  public static final RegistryObject<Item> VOLLEYBALL = ITEMS.register(
+      "volleyball",
+      () -> new VolleyballItem(new Item.Properties().stacksTo(16))
+  );
 
   // 2. Register the Spawn Egg (Primary color: Green, Secondary color: Red -
   // change as desired)
