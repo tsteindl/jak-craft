@@ -26,10 +26,21 @@ public class ModItems {
           0xd2bc5a,
           new Item.Properties()));
 
+  // Base Carlos die Klinge - diamond-sword damage (7). All variants are drinkable (heal 8 hearts).
   public static final RegistryObject<Item> CARLOS_DIE_KLINGE = ITEMS.register(
           "carlos_die_klinge",
           CarlosDieKlinge::new
   );
+
+  // Test variants with increasing melee damage (displayed attack damage = modifier + 4).
+  public static final RegistryObject<Item> CARLOS_DIE_KLINGE_II = ITEMS.register(
+          "carlos_die_klinge_ii", () -> new CarlosDieKlinge(11));   // 15 damage
+  public static final RegistryObject<Item> CARLOS_DIE_KLINGE_III = ITEMS.register(
+          "carlos_die_klinge_iii", () -> new CarlosDieKlinge(26));  // 30 damage
+  public static final RegistryObject<Item> CARLOS_DIE_KLINGE_IV = ITEMS.register(
+          "carlos_die_klinge_iv", () -> new CarlosDieKlinge(56));   // 60 damage
+  public static final RegistryObject<Item> CARLOS_DIE_KLINGE_V = ITEMS.register(
+          "carlos_die_klinge_v", () -> new CarlosDieKlinge(116));   // 120 damage
 
   public static final RegistryObject<Item> DER_GROSSMACHER = ITEMS.register(
           "der_grossmacher",
