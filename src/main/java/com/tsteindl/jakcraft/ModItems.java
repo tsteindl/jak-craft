@@ -18,6 +18,13 @@ public class ModItems {
           0x9804699,
           new Item.Properties()));
 
+  public static final RegistryObject<Item> POPE_VILLAGER_SPAWN_EGG = ITEMS.register("pope_villager_spawn_egg",
+      () -> new ForgeSpawnEggItem(
+          ModEntities.POPE_VILLAGER,
+          0xf2f0dc,
+          0xd2bc5a,
+          new Item.Properties()));
+
   public static final RegistryObject<Item> CARLOS_DIE_KLINGE = ITEMS.register(
           "carlos_die_klinge",
           CarlosDieKlinge::new
@@ -31,6 +38,11 @@ public class ModItems {
   public static final RegistryObject<Item> VOLLEYBALL = ITEMS.register(
       "volleyball",
       () -> new VolleyballItem(new Item.Properties().stacksTo(16))
+  );
+
+  public static final RegistryObject<Item> VOLLEYBALL_SHOES = ITEMS.register(
+      "volleyball_shoes",
+      () -> new VolleyballShoesItem(new Item.Properties())
   );
 
   // 2. Register the Spawn Egg (Primary color: Green, Secondary color: Red -

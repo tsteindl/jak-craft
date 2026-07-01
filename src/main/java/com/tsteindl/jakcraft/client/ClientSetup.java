@@ -1,6 +1,7 @@
 package com.tsteindl.jakcraft.client;
 
 import com.tsteindl.jakcraft.ModEntities;
+import com.tsteindl.jakcraft.client.PopeVillagerRenderer;
 import com.yellowbrossproductions.illageandspillage.client.render.MagispellerRenderer;
 import com.tsteindl.jakcraft.JakVelociraptorModel;
 
@@ -28,5 +29,6 @@ public class ClientSetup {
     // Link your custom Entity Type to your custom Renderer
     event.registerEntityRenderer(ModEntities.JAK_VELOCIRAPTOR.get(), JakVelociraptorModel::createRenderer);
     event.registerEntityRenderer(ModEntities.VOLLEYBALL.get(), ThrownItemRenderer::new);
+    event.registerEntityRenderer(ModEntities.POPE_VILLAGER.get(), PopeVillagerRenderer::new);
   }
 }

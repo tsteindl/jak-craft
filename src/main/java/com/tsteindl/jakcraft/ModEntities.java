@@ -5,6 +5,7 @@ import com.yellowbrossproductions.illageandspillage.entities.MagispellerEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -45,6 +46,13 @@ public class ModEntities {
           .updateInterval(2)
           .build(fromNamespaceAndPath(Jakcraft.MODID, "volleyball").toString()));
 
+  public static final RegistryObject<EntityType<PopeVillagerEntity>> POPE_VILLAGER = ENTITY_TYPES
+      .register("pope_villager", () -> EntityType.Builder
+          .of(PopeVillagerEntity::new, MobCategory.CREATURE)
+          .sized(0.6F, 1.95F)
+          .clientTrackingRange(10)
+          .build(fromNamespaceAndPath(Jakcraft.MODID, "pope_villager").toString()));
+
   @SubscribeEvent
   public static void onAttribute(EntityAttributeCreationEvent event) {
     event.put(MUELLAGERKING.get(), MagispellerEntity.createAttributes().build());
@@ -53,5 +61,6 @@ public class ModEntities {
         .add(Attributes.MOVEMENT_SPEED, 0.25D)
         .add(Attributes.ATTACK_DAMAGE, 6.0D)
         .build());
+    event.put(POPE_VILLAGER.get(), Villager.createAttributes().build());
   }
 }
