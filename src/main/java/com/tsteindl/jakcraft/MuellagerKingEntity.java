@@ -28,6 +28,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -120,6 +121,7 @@ public class MuellagerKingEntity extends MagispellerEntity {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
+        this.bossEvent.removePlayer(player); // never show the parent's bar; we only use our own
         this.bossBar.addPlayer(player);
     }
 
@@ -151,8 +153,10 @@ public class MuellagerKingEntity extends MagispellerEntity {
         } else {
             this.healthCap = health;
         }
-        // Suppress the parent's boss bar and drive our own (runs last so it wins each tick).
+        // Suppress the parent's boss bar completely (hide it AND clear its players, so it can never
+        // show up as a second bar) and drive our own. Runs last so it wins each tick.
         this.bossEvent.setVisible(false);
+        this.bossEvent.removeAllPlayers();
         this.bossBar.setName(this.getDisplayName());
         this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
     }
@@ -160,6 +164,15 @@ public class MuellagerKingEntity extends MagispellerEntity {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+
+        // Never be a pillager "captain": strip the ominous banner and patrol-leader status so the
+        // king never spawns/renders with the captain banner on its head.
+        if (this.isPatrolLeader()) {
+            this.setPatrolLeader(false);
+        }
+        if (this.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof BannerItem) {
+            this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+        }
 
         if (this.fourierCooldown > 0) {
             this.fourierCooldown--;

@@ -19,9 +19,10 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 // Drives the Papst storyline on the server:
@@ -37,28 +38,34 @@ public class PopeStoryHandler {
   private static final int CHECK_INTERVAL_TICKS = 40; // ~2s between spawn checks
   private static final double AREA_RADIUS = 48.0;
 
-  // Pending victory teleports, ticked down in the overworld tick. Keyed by player UUID so a
-  // logged-out/rejoined player is resolved fresh at fire time.
-  private record PendingTeleport(long fireGameTime, List<UUID> playerIds) {}
+  // A player waiting for the victory teleport. They are moved once they've picked up the PhD scroll
+  // (plus a short beat), or after a fallback timeout as a safety net if they never pick it up.
+  private static final class VictoryWatch {
+    final long fallbackFireTime;          // absolute game time to teleport no matter what
+    long armedFireTime = Long.MAX_VALUE;  // set once the player is holding the PhD scroll
 
-  private static final List<PendingTeleport> PENDING_TELEPORTS = new ArrayList<>();
+    VictoryWatch(long fallbackFireTime) {
+      this.fallbackFireTime = fallbackFireTime;
+    }
+  }
+
+  // Keyed by player UUID so a logged-out/rejoined player is resolved fresh at fire time.
+  private static final Map<UUID, VictoryWatch> VICTORY_WATCHES = new HashMap<>();
 
   // True while a Müllagerking is alive in the overworld. Updated every overworld tick and read by
   // the block-protection handlers below so the boss fight can't destroy the world.
   private static volatile boolean muellagerActive = false;
 
-  // Called by the Müllagerking when it dies; schedules the delayed teleport for nearby players.
+  // Called by the Müllagerking when it dies; starts watching nearby players for the PhD pickup.
   public static void scheduleVictoryTeleport(ServerLevel level, List<ServerPlayer> players) {
     if (players.isEmpty()) {
       return;
     }
-    long delayTicks = Math.max(0L, (long) Config.VICTORY_TELEPORT_DELAY_SECONDS.get()) * 20L;
-    long fireTime = level.getGameTime() + delayTicks;
-    List<UUID> ids = new ArrayList<>();
+    long fallbackTicks = Math.max(0L, (long) Config.VICTORY_FALLBACK_SECONDS.get()) * 20L;
+    long fallbackFireTime = level.getGameTime() + fallbackTicks;
     for (ServerPlayer player : players) {
-      ids.add(player.getUUID());
+      VICTORY_WATCHES.put(player.getUUID(), new VictoryWatch(fallbackFireTime));
     }
-    PENDING_TELEPORTS.add(new PendingTeleport(fireTime, ids));
   }
 
   @SubscribeEvent
@@ -137,28 +144,46 @@ public class PopeStoryHandler {
   }
 
   private static void processPendingTeleports(ServerLevel level) {
-    if (PENDING_TELEPORTS.isEmpty()) {
+    if (VICTORY_WATCHES.isEmpty()) {
       return;
     }
     long now = level.getGameTime();
+    long postPickupDelay = Math.max(0L, (long) Config.VICTORY_TELEPORT_DELAY_SECONDS.get()) * 20L;
     double x = Config.VICTORY_PLATFORM_X.get() + 0.5;
     double y = Config.VICTORY_PLATFORM_Y.get();
     double z = Config.VICTORY_PLATFORM_Z.get() + 0.5;
 
-    Iterator<PendingTeleport> it = PENDING_TELEPORTS.iterator();
+    Iterator<Map.Entry<UUID, VictoryWatch>> it = VICTORY_WATCHES.entrySet().iterator();
     while (it.hasNext()) {
-      PendingTeleport pending = it.next();
-      if (now < pending.fireGameTime()) {
+      Map.Entry<UUID, VictoryWatch> entry = it.next();
+      VictoryWatch watch = entry.getValue();
+      ServerPlayer player = level.getServer().getPlayerList().getPlayer(entry.getKey());
+      if (player == null) {
+        if (now >= watch.fallbackFireTime) {
+          it.remove(); // gave up on a player who never came back
+        }
         continue;
       }
-      for (UUID id : pending.playerIds()) {
-        ServerPlayer player = level.getServer().getPlayerList().getPlayer(id);
-        if (player != null) {
-          player.teleportTo(level, x, y, z, player.getYRot(), player.getXRot());
-        }
+      // Arm the short countdown the moment the player picks up the dropped PhD scroll.
+      if (watch.armedFireTime == Long.MAX_VALUE && hasPhdScroll(player)) {
+        watch.armedFireTime = now + postPickupDelay;
       }
-      it.remove();
+      if (now >= watch.armedFireTime || now >= watch.fallbackFireTime) {
+        player.teleportTo(level, x, y, z, player.getYRot(), player.getXRot());
+        it.remove();
+      }
     }
+  }
+
+  private static boolean hasPhdScroll(ServerPlayer player) {
+    var phd = ModItems.PHD.get();
+    var inventory = player.getInventory();
+    for (int i = 0; i < inventory.getContainerSize(); i++) {
+      if (inventory.getItem(i).is(phd)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void ensureNpcsExist(ServerLevel level) {

@@ -46,8 +46,9 @@ public class Config {
   public static final ForgeConfigSpec.ConfigValue<Integer> POPE_SPAWN_Z;
   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> POPE_DIALOGUE;
 
-  // Victory: after the king dies, players are teleported to the birthday platform.
+  // Victory: after the king dies and the player picks up the PhD scroll, they are teleported.
   public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_TELEPORT_DELAY_SECONDS;
+  public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_FALLBACK_SECONDS;
   public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_X;
   public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_Y;
   public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_Z;
@@ -164,9 +165,14 @@ public class Config {
             obj -> obj instanceof String);
 
     VICTORY_TELEPORT_DELAY_SECONDS = builder
-        .comment("Sekunden nach dem Sieg über Müller, bevor die Spieler zur Geburtstagsplattform",
-                "teleportiert werden (Zeit, um die PhD-Schriftrolle einzusammeln).")
-        .define("victory_teleport_delay_seconds", 8);
+        .comment("Sekunden NACH dem Aufheben der PhD-Schriftrolle, bevor der Spieler zur",
+                "Geburtstagsplattform teleportiert wird (kurze Verschnaufpause nach dem Sieg).")
+        .define("victory_teleport_delay_seconds", 5);
+
+    VICTORY_FALLBACK_SECONDS = builder
+        .comment("Sicherheitsnetz: Wird die Schriftrolle nach dem Tod des Königs nicht aufgehoben,",
+                "wird der Spieler spätestens nach so vielen Sekunden trotzdem teleportiert.")
+        .define("victory_fallback_seconds", 120);
     VICTORY_PLATFORM_X = builder.comment("X-Koordinate der Geburtstagsplattform.").define("victory_platform_x", -332);
     VICTORY_PLATFORM_Y = builder.comment("Y-Koordinate der Geburtstagsplattform.").define("victory_platform_y", 136);
     VICTORY_PLATFORM_Z = builder.comment("Z-Koordinate der Geburtstagsplattform.").define("victory_platform_z", -151);
