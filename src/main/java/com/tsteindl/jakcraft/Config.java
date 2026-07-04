@@ -180,7 +180,7 @@ public class Config {
                 "wird der Spieler spätestens nach so vielen Sekunden trotzdem teleportiert.")
         .define("victory_fallback_seconds", 120);
     VICTORY_PLATFORM_X = builder.comment("X-Koordinate der Geburtstagsplattform.").define("victory_platform_x", -332);
-    VICTORY_PLATFORM_Y = builder.comment("Y-Koordinate der Geburtstagsplattform.").define("victory_platform_y", 136);
+    VICTORY_PLATFORM_Y = builder.comment("Y-Koordinate der Geburtstagsplattform.").define("victory_platform_y", 140);
     VICTORY_PLATFORM_Z = builder.comment("Z-Koordinate der Geburtstagsplattform.").define("victory_platform_z", -151);
 
     builder.pop();
