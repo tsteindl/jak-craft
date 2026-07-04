@@ -27,6 +27,8 @@ public class Config {
   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> LECHNER_LINES;
   // Played when the king dies.
   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> DEATH_LINES;
+  // Multiplier applied to the king's base max health (1.0 = unchanged).
+  public static final ForgeConfigSpec.DoubleValue MUELLAGER_HEALTH_MULTIPLIER;
 
   // If true, the Helfer and Papst NPCs are kept present at their coordinates (for testing).
   public static final ForgeConfigSpec.BooleanValue STORY_AUTO_SPAWN;
@@ -59,6 +61,10 @@ public class Config {
     builder.comment("Müllagerking final boss - Paul Müller, Jakobs Doktorvater (harmonische Analysis).",
             "Alle Zeilen erscheinen im Chat. Eigene Zeilen einfach hinzufügen.")
         .push("muellagerking");
+
+    MUELLAGER_HEALTH_MULTIPLIER = builder
+        .comment("Multiplikator für Müllers maximale Lebenspunkte (1.0 = unverändert, höher = mehr HP).")
+        .defineInRange("health_multiplier", 1.3, 1.0, 1000.0);
 
     FIGHT_START_LINES = builder
         .comment("Zeilen zu Kampfbeginn (eine wird zufällig gewählt).")

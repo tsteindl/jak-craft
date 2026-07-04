@@ -72,10 +72,10 @@ public class MuellagerKingEntity extends MagispellerEntity {
         super(type, level);
     }
 
-    // +50% max health on top of Illage & Spillage's configured base health. Applied as a
-    // MULTIPLY_TOTAL modifier so it scales whatever base value the parent sets (now and each tick).
+    // Max-health multiplier on top of Illage & Spillage's configured base health, driven by
+    // Config.MUELLAGER_HEALTH_MULTIPLIER. Applied as a MULTIPLY_TOTAL modifier so it scales whatever
+    // base value the parent sets (now and each tick).
     private static final UUID HEALTH_BOOST_UUID = UUID.fromString("a1b2c3d4-e5f6-4708-9a1b-2c3d4e5f6071");
-    private static final double HEALTH_BOOST = 0.5D;
 
     @Override
     @Nullable
@@ -83,12 +83,27 @@ public class MuellagerKingEntity extends MagispellerEntity {
             MobSpawnType reason, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
         AttributeInstance maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
+        double boost = Math.max(1.0D, Config.MUELLAGER_HEALTH_MULTIPLIER.get()) - 1.0D;
         if (maxHealth != null && maxHealth.getModifier(HEALTH_BOOST_UUID) == null) {
             maxHealth.addPermanentModifier(new AttributeModifier(
-                HEALTH_BOOST_UUID, "Muellager health boost", HEALTH_BOOST, AttributeModifier.Operation.MULTIPLY_TOTAL));
+                HEALTH_BOOST_UUID, "Muellager health boost", boost, AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
         this.setHealth(this.getMaxHealth());
         return result;
+    }
+
+    // True if another living Müller exists with a higher entity id (so this one is the stale
+    // duplicate that should remove itself). Keeps exactly one boss/boss bar in the world.
+    private boolean isDuplicateKing() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return false;
+        }
+        for (MuellagerKingEntity other : serverLevel.getEntities(ModEntities.MUELLAGERKING.get(), MuellagerKingEntity::isAlive)) {
+            if (other != this && other.getId() > this.getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -96,13 +111,14 @@ public class MuellagerKingEntity extends MagispellerEntity {
         super.registerGoals();
         // Remove parent attacks we disable/replace. NOTE: getAvailableGoals() returns a COPY here,
         // so removeIf on it does nothing - we must call goalSelector.removeGoal() on the real set.
-        // We keep DispenserGoal (its "Illashooter" minions become our Passenbrunner) and FakersGoal
-        // (the clone / "two kings" - intentional).
+        // We keep DispenserGoal (its "Illashooter" minions become our Passenbrunner). We now also
+        // remove FakersGoal: it spawned teleporting clone entities ("two kings") that read as a
+        // second, instantly-teleporting Müller - too confusing/game-breaking.
         List<Goal> toRemove = new ArrayList<>();
         for (WrappedGoal wrapped : this.goalSelector.getAvailableGoals()) {
             String name = wrapped.getGoal().getClass().getSimpleName().toLowerCase();
             if (name.contains("lifesteal") || name.contains("heal")
-                || name.contains("summonvexes")) {
+                || name.contains("summonvexes") || name.contains("faker")) {
                 toRemove.add(wrapped.getGoal());
             }
         }
@@ -133,6 +149,14 @@ public class MuellagerKingEntity extends MagispellerEntity {
 
     @Override
     public void tick() {
+        // Only ever allow ONE Müller: a duplicate (e.g. from a double transform or a leftover
+        // spawn) removes itself, which also removes its boss bar - fixes the "two Müllers"/double
+        // boss bar. The newest king (highest id) is kept.
+        if (!this.level().isClientSide && this.isDuplicateKing()) {
+            this.bossBar.removeAllPlayers();
+            this.discard();
+            return;
+        }
         // Cancel any life-steal attack state before the parent's tick logic can act on it.
         if (!this.level().isClientSide && this.getAttackType() == LIFESTEAL_ATTACK_TYPE) {
             this.setAttackType(0);

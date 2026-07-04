@@ -38,14 +38,17 @@ public class PopeStoryHandler {
   private static final int CHECK_INTERVAL_TICKS = 40; // ~2s between spawn checks
   private static final double AREA_RADIUS = 48.0;
 
-  // A player waiting for the victory teleport. They are moved once they've picked up the PhD scroll
-  // (plus a short beat), or after a fallback timeout as a safety net if they never pick it up.
+  // A player waiting for the victory teleport. They are moved once they've picked up a NEW PhD
+  // scroll (more than they held at the king's death - so a scroll from a previous run doesn't
+  // count), plus a short beat; or after a fallback timeout as a safety net.
   private static final class VictoryWatch {
     final long fallbackFireTime;          // absolute game time to teleport no matter what
-    long armedFireTime = Long.MAX_VALUE;  // set once the player is holding the PhD scroll
+    final int phdBaseline;                // PhD scrolls the player already had when the king died
+    long armedFireTime = Long.MAX_VALUE;  // set once the player picks up a new PhD scroll
 
-    VictoryWatch(long fallbackFireTime) {
+    VictoryWatch(long fallbackFireTime, int phdBaseline) {
       this.fallbackFireTime = fallbackFireTime;
+      this.phdBaseline = phdBaseline;
     }
   }
 
@@ -64,7 +67,7 @@ public class PopeStoryHandler {
     long fallbackTicks = Math.max(0L, (long) Config.VICTORY_FALLBACK_SECONDS.get()) * 20L;
     long fallbackFireTime = level.getGameTime() + fallbackTicks;
     for (ServerPlayer player : players) {
-      VICTORY_WATCHES.put(player.getUUID(), new VictoryWatch(fallbackFireTime));
+      VICTORY_WATCHES.put(player.getUUID(), new VictoryWatch(fallbackFireTime, countPhdScrolls(player)));
     }
   }
 
@@ -164,8 +167,9 @@ public class PopeStoryHandler {
         }
         continue;
       }
-      // Arm the short countdown the moment the player picks up the dropped PhD scroll.
-      if (watch.armedFireTime == Long.MAX_VALUE && hasPhdScroll(player)) {
+      // Arm the short countdown the moment the player picks up a NEW PhD scroll (count goes above
+      // what they already had at the king's death). A scroll from a previous run does NOT count.
+      if (watch.armedFireTime == Long.MAX_VALUE && countPhdScrolls(player) > watch.phdBaseline) {
         watch.armedFireTime = now + postPickupDelay;
       }
       if (now >= watch.armedFireTime || now >= watch.fallbackFireTime) {
@@ -175,15 +179,17 @@ public class PopeStoryHandler {
     }
   }
 
-  private static boolean hasPhdScroll(ServerPlayer player) {
+  private static int countPhdScrolls(ServerPlayer player) {
     var phd = ModItems.PHD.get();
     var inventory = player.getInventory();
+    int count = 0;
     for (int i = 0; i < inventory.getContainerSize(); i++) {
-      if (inventory.getItem(i).is(phd)) {
-        return true;
+      var stack = inventory.getItem(i);
+      if (stack.is(phd)) {
+        count += stack.getCount();
       }
     }
-    return false;
+    return count;
   }
 
   private static void ensureNpcsExist(ServerLevel level) {

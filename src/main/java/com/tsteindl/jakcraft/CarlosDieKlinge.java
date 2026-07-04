@@ -23,7 +23,7 @@ public class CarlosDieKlinge extends SwordItem {
     private static final float HEAL_AMOUNT = 16.0F; // 8 hearts
 
     public CarlosDieKlinge() {
-        this(3); // default: diamond-sword-level damage (7 attack damage)
+        this(26); // default "Carlos die Klinge": 30 attack damage (was the III variant)
     }
 
     // attackDamageModifier is added to the Diamond tier bonus (3) and the player's base (1),

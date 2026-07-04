@@ -5,11 +5,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -51,6 +53,17 @@ public class PopeVillagerEntity extends Villager {
   // Role is intrinsic to the entity type, so it survives saving/loading with no extra data.
   public Role getRole() {
     return this.getType() == ModEntities.HELPER_VILLAGER.get() ? Role.HELPER : Role.POPE;
+  }
+
+  // The quest NPC can never be killed or damaged in normal play; it only leaves play by
+  // transforming (the Papst) via dialogue. This is stronger/earlier than setInvulnerable so it
+  // works even if setup didn't run. /kill and the void still work so it can be reset.
+  @Override
+  public boolean hurt(DamageSource source, float amount) {
+    if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+      return super.hurt(source, amount);
+    }
+    return false;
   }
 
   // Runs on every spawn (spawn egg, story handler, /summon): make it a stationary, protected NPC.
