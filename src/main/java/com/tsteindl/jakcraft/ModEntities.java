@@ -53,6 +53,14 @@ public class ModEntities {
           .clientTrackingRange(10)
           .build(fromNamespaceAndPath(Jakcraft.MODID, "pope_villager").toString()));
 
+  // Same entity class as the Papst; the type decides the role (Helfer, on the plaza).
+  public static final RegistryObject<EntityType<PopeVillagerEntity>> HELPER_VILLAGER = ENTITY_TYPES
+      .register("helper_villager", () -> EntityType.Builder
+          .of(PopeVillagerEntity::new, MobCategory.CREATURE)
+          .sized(0.6F, 1.95F)
+          .clientTrackingRange(10)
+          .build(fromNamespaceAndPath(Jakcraft.MODID, "helper_villager").toString()));
+
   @SubscribeEvent
   public static void onAttribute(EntityAttributeCreationEvent event) {
     event.put(MUELLAGERKING.get(), MagispellerEntity.createAttributes().build());
@@ -62,5 +70,6 @@ public class ModEntities {
         .add(Attributes.ATTACK_DAMAGE, 6.0D)
         .build());
     event.put(POPE_VILLAGER.get(), Villager.createAttributes().build());
+    event.put(HELPER_VILLAGER.get(), Villager.createAttributes().build());
   }
 }

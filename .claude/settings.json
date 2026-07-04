@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 590 ./gradlew compileJava --console=plain)",
+      "Bash(timeout 590 ./gradlew build --console=plain -x test)"
+    ]
+  }
+}

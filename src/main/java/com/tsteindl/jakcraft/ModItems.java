@@ -1,5 +1,6 @@
 package com.tsteindl.jakcraft;
 
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.ForgeSpawnEggItem;
@@ -24,6 +25,13 @@ public class ModItems {
           ModEntities.POPE_VILLAGER,
           0xf2f0dc,
           0xd2bc5a,
+          new Item.Properties()));
+
+  public static final RegistryObject<Item> HELPER_VILLAGER_SPAWN_EGG = ITEMS.register("helper_villager_spawn_egg",
+      () -> new ForgeSpawnEggItem(
+          ModEntities.HELPER_VILLAGER,
+          0xdddddd,
+          0x8a8a8a,
           new Item.Properties()));
 
   // Base Carlos die Klinge - diamond-sword damage (7). All variants are drinkable (heal 8 hearts).
@@ -60,6 +68,18 @@ public class ModItems {
   public static final RegistryObject<Item> MOJITO = ITEMS.register(
       "mojito",
       () -> new MojitoItem(new Item.Properties().stacksTo(16))
+  );
+
+  // "Raab-Heim Menü" - a Schnitzel that fills the whole hunger bar (and then some saturation).
+  // Nutrition caps at 20 (the full 10 hunger bars); the big saturation makes it last a long time.
+  public static final RegistryObject<Item> RAAB_HEIM_MENU = ITEMS.register(
+      "raab_heim_menu",
+      () -> new Item(new Item.Properties().food(
+          new FoodProperties.Builder()
+              .nutrition(20)
+              .saturationMod(2.0F)
+              .alwaysEat()
+              .build()))
   );
 
   // Scroll-like trophy dropped by the Müllagerking - Jakob finally earns his doctorate.

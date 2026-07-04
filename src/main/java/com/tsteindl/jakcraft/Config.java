@@ -28,6 +28,30 @@ public class Config {
   // Played when the king dies.
   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> DEATH_LINES;
 
+  // If true, the Helfer and Papst NPCs are kept present at their coordinates (for testing).
+  public static final ForgeConfigSpec.BooleanValue STORY_AUTO_SPAWN;
+
+  // Name shown for the player-character dialogue lines (emulates that player chatting).
+  public static final ForgeConfigSpec.ConfigValue<String> PROTAGONIST_NAME;
+
+  // Helfer on the plaza in front of the basilica.
+  public static final ForgeConfigSpec.ConfigValue<Integer> HELPER_SPAWN_X;
+  public static final ForgeConfigSpec.ConfigValue<Integer> HELPER_SPAWN_Y;
+  public static final ForgeConfigSpec.ConfigValue<Integer> HELPER_SPAWN_Z;
+  public static final ForgeConfigSpec.ConfigValue<List<? extends String>> HELPER_DIALOGUE;
+
+  // Papst at the altar inside the basilica; transforms into the Müllagerking.
+  public static final ForgeConfigSpec.ConfigValue<Integer> POPE_SPAWN_X;
+  public static final ForgeConfigSpec.ConfigValue<Integer> POPE_SPAWN_Y;
+  public static final ForgeConfigSpec.ConfigValue<Integer> POPE_SPAWN_Z;
+  public static final ForgeConfigSpec.ConfigValue<List<? extends String>> POPE_DIALOGUE;
+
+  // Victory: after the king dies, players are teleported to the birthday platform.
+  public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_TELEPORT_DELAY_SECONDS;
+  public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_X;
+  public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_Y;
+  public static final ForgeConfigSpec.ConfigValue<Integer> VICTORY_PLATFORM_Z;
+
   static {
     ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -87,6 +111,65 @@ public class Config {
             List.of(
                 "Beeindruckend... vielleicht doch... promotionswürdig..."),
             obj -> obj instanceof String);
+
+    builder.pop();
+
+    builder.comment("Papst-Handlung: Helfer auf dem Vorplatz, Papst am Altar, Verwandlung und Sieg-Teleport.")
+        .push("story");
+
+    STORY_AUTO_SPAWN = builder
+        .comment("Wenn true, werden Helfer und Papst automatisch an ihren Koordinaten platziert, sobald ein",
+                "Spieler in der Nähe ist. Standard: false - platziere die NPCs stattdessen von Hand mit ihren",
+                "Spawn-Eiern (Helfer- bzw. Papst-Spawn-Ei). Auf true setzen, wenn du automatisches Platzieren willst.")
+        .define("auto_spawn", false);
+
+    PROTAGONIST_NAME = builder
+        .comment("Name für die Spieler-Zeilen im Dialog (Sprecher \"Spieler\", \"Jakob\" oder \"Player\").",
+                "Die Zeile wird als ganz normale Chat-Nachricht dieses Spielers angezeigt: \"<Name> Text\".",
+                "So wirkt es, als würde dieser Spieler die Zeile selbst in den Chat schreiben.")
+        .define("protagonist_name", "TheRealMikeJohn");
+
+    HELPER_SPAWN_X = builder.comment("X-Koordinate des Helfers (Vorplatz des Petersdoms).").define("helper_spawn_x", 129);
+    HELPER_SPAWN_Y = builder.comment("Y-Koordinate (Höhe) des Helfers - je nach Welt anpassen.").define("helper_spawn_y", 69);
+    HELPER_SPAWN_Z = builder.comment("Z-Koordinate des Helfers.").define("helper_spawn_z", -152);
+
+    HELPER_DIALOGUE = builder
+        .comment("Dialog mit dem Helfer auf dem Vorplatz. Format je Zeile: \"Sprecher|Text\".",
+                "Sprecher \"Helfer\" = grau (fett), \"Spieler\"/\"Jakob\"/\"Player\" = als Chat-Nachricht von",
+                "protagonist_name (\"<Name> Text\"), alles andere = Papst (gold, fett).",
+                "Der Helfer verwandelt sich NICHT - er schickt dich hinein zum Papst am Altar.")
+        .defineList("helper_dialogue",
+            List.of(
+                "Helfer|Hallo! Heute gibt es leider keine Audienzen - der Petersdom ist geschlossen.",
+                "Jakob|Bitte, es ist wirklich wichtig. Mir wird das Funding gestrichen, und nur der Papst kann mir noch helfen!",
+                "Helfer|Das Funding... na gut. So viel Verzweiflung habe ich lange nicht gesehen.",
+                "Helfer|Ich lasse dich ein. Der Heilige Vater erwartet dich drinnen am Altar - geh hinein."),
+            obj -> obj instanceof String);
+
+    POPE_SPAWN_X = builder.comment("X-Koordinate des Papst (Altar im Petersdom).").define("pope_spawn_x", -153);
+    POPE_SPAWN_Y = builder.comment("Y-Koordinate (Höhe) des Papst - je nach Welt anpassen.").define("pope_spawn_y", 71);
+    POPE_SPAWN_Z = builder.comment("Z-Koordinate des Papst.").define("pope_spawn_z", -152);
+
+    POPE_DIALOGUE = builder
+        .comment("Dialog mit dem Papst am Altar. Format je Zeile: \"Sprecher|Text\".",
+                "Rechtsklick zeigt die nächste Zeile. Nach der letzten Zeile verwandelt er sich in Müller.")
+        .defineList("pope_dialogue",
+            List.of(
+                "Papst|Mein Sohn. Man erzählt sich, du forschst über harmonische Analysis.",
+                "Papst|Fourierreihen, Konvergenz, singuläre Integrale - ein erhabenes, aber gefährliches Feld.",
+                "Papst|Die Harmonie der Schwingungen ist gottgegeben, doch nur wenige beherrschen sie wahrhaftig.",
+                "Papst|Du möchtest also mein Dekret für dein Funding? Nun gut - du sollst es bekommen...",
+                "Papst|...ABER nur, wenn du deinen eigenen Doktorvater im Kampf bezwingst!",
+                "Papst|Erblicke die wahre Gestalt von Paul Müller!"),
+            obj -> obj instanceof String);
+
+    VICTORY_TELEPORT_DELAY_SECONDS = builder
+        .comment("Sekunden nach dem Sieg über Müller, bevor die Spieler zur Geburtstagsplattform",
+                "teleportiert werden (Zeit, um die PhD-Schriftrolle einzusammeln).")
+        .define("victory_teleport_delay_seconds", 8);
+    VICTORY_PLATFORM_X = builder.comment("X-Koordinate der Geburtstagsplattform.").define("victory_platform_x", -332);
+    VICTORY_PLATFORM_Y = builder.comment("Y-Koordinate der Geburtstagsplattform.").define("victory_platform_y", 136);
+    VICTORY_PLATFORM_Z = builder.comment("Z-Koordinate der Geburtstagsplattform.").define("victory_platform_z", -151);
 
     builder.pop();
     SPEC = builder.build();

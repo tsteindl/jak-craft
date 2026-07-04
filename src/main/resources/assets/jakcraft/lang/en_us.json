@@ -8,9 +8,12 @@
   "item.jakcraft.volleyball": "Volleyball",
   "item.jakcraft.volleyball_shoes": "Volleyball Shoes",
   "item.jakcraft.mojito": "Mojito",
+  "item.jakcraft.raab_heim_menu": "Raab-Heim Menü",
   "item.jakcraft.phd": "PhD",
   "item.jakcraft.pope_villager_spawn_egg": "Pope Villager Spawn Egg",
+  "item.jakcraft.helper_villager_spawn_egg": "Helper Villager Spawn Egg",
   "entity.jakcraft.volleyball": "Volleyball",
-  "entity.jakcraft.pope_villager": "Pope Villager",
+  "entity.jakcraft.pope_villager": "Papst",
+  "entity.jakcraft.helper_villager": "Helfer",
   "entity.jakcraft.muellagerking": "Müller"
 }

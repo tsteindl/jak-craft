@@ -20,6 +20,7 @@ public class ModCreativeTab {
             output.accept(ModItems.JAK_VELOCIRAPTOR_SPAWN_EGG.get());
             output.accept(ModItems.MUELLAGERKING_SPAWN_EGG.get());
             output.accept(ModItems.POPE_VILLAGER_SPAWN_EGG.get());
+            output.accept(ModItems.HELPER_VILLAGER_SPAWN_EGG.get());
             output.accept(ModItems.CARLOS_DIE_KLINGE.get());
             output.accept(ModItems.CARLOS_DIE_KLINGE_II.get());
             output.accept(ModItems.CARLOS_DIE_KLINGE_III.get());
@@ -29,6 +30,7 @@ public class ModCreativeTab {
             output.accept(ModItems.VOLLEYBALL.get());
             output.accept(ModItems.VOLLEYBALL_SHOES.get());
             output.accept(ModItems.MOJITO.get());
+            output.accept(ModItems.RAAB_HEIM_MENU.get());
             output.accept(ModItems.PHD.get());
           })
           .build());

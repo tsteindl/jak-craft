@@ -4,11 +4,13 @@ import com.yellowbrossproductions.illageandspillage.entities.IllashooterEntity;
 import com.yellowbrossproductions.illageandspillage.entities.MagispellerEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -16,6 +18,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -27,6 +33,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -42,7 +51,10 @@ public class MuellagerKingEntity extends MagispellerEntity {
     private static final int PASSENBRUNNER_LINE_GAP_TICKS = 100;
     private static final int LIFESTEAL_ATTACK_TYPE = 2;
 
+    private static final double VICTORY_PLAYER_RANGE = 64.0;
+
     private boolean announcedFightStart = false;
+    private boolean victoryScheduled = false;
     private int lastAttackType = 0;
     private int fourierCooldown = 0;
     private long lastAttackLineTime = -10000L;
@@ -57,6 +69,25 @@ public class MuellagerKingEntity extends MagispellerEntity {
 
     public MuellagerKingEntity(EntityType<? extends MagispellerEntity> type, Level level) {
         super(type, level);
+    }
+
+    // +50% max health on top of Illage & Spillage's configured base health. Applied as a
+    // MULTIPLY_TOTAL modifier so it scales whatever base value the parent sets (now and each tick).
+    private static final UUID HEALTH_BOOST_UUID = UUID.fromString("a1b2c3d4-e5f6-4708-9a1b-2c3d4e5f6071");
+    private static final double HEALTH_BOOST = 0.5D;
+
+    @Override
+    @Nullable
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
+            MobSpawnType reason, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        AttributeInstance maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth != null && maxHealth.getModifier(HEALTH_BOOST_UUID) == null) {
+            maxHealth.addPermanentModifier(new AttributeModifier(
+                HEALTH_BOOST_UUID, "Muellager health boost", HEALTH_BOOST, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        }
+        this.setHealth(this.getMaxHealth());
+        return result;
     }
 
     @Override
@@ -178,6 +209,16 @@ public class MuellagerKingEntity extends MagispellerEntity {
     @Override
     public void die(DamageSource source) {
         this.say(Config.DEATH_LINES.get());
+        // Once the king falls to a player, teleport the fighters to the birthday platform after a
+        // delay (time to grab the dropped PhD scroll). The lastHurtByPlayerTime check means a plain
+        // /kill (e.g. during a map reset) neither drops the scroll nor triggers the teleport.
+        if (!this.victoryScheduled && this.lastHurtByPlayerTime > 0
+                && this.level() instanceof ServerLevel serverLevel) {
+            this.victoryScheduled = true;
+            List<ServerPlayer> nearby = serverLevel.getEntitiesOfClass(
+                ServerPlayer.class, this.getBoundingBox().inflate(VICTORY_PLAYER_RANGE));
+            PopeStoryHandler.scheduleVictoryTeleport(serverLevel, nearby);
+        }
         super.die(source);
     }
 

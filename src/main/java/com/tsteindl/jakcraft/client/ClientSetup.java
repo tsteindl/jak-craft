@@ -30,5 +30,6 @@ public class ClientSetup {
     event.registerEntityRenderer(ModEntities.JAK_VELOCIRAPTOR.get(), JakVelociraptorModel::createRenderer);
     event.registerEntityRenderer(ModEntities.VOLLEYBALL.get(), ThrownItemRenderer::new);
     event.registerEntityRenderer(ModEntities.POPE_VILLAGER.get(), PopeVillagerRenderer::new);
+    event.registerEntityRenderer(ModEntities.HELPER_VILLAGER.get(), PopeVillagerRenderer::new);
   }
 }
