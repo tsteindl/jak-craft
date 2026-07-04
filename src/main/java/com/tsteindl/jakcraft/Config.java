@@ -94,7 +94,7 @@ public class Config {
             List.of(
                 "Passenbrunner, an die Arbeit!",
                 "Herr Passenbrunner, übernehmen Sie!",
-                "Die Passenbrunner werden dich lehren!"),
+                "Herr Passenbrunner wird dich lehren!"),
             obj -> obj instanceof String);
 
     LECHNER_LINES = builder
@@ -103,7 +103,7 @@ public class Config {
             List.of(
                 "Lechner, zeig ihm die Grenzen!",
                 "Lechner, an die Tafel!",
-                "Auf sie, meine Lechner!"),
+                "Auf ihn, Herr Lechner!"),
             obj -> obj instanceof String);
 
     DEATH_LINES = builder
